@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "postinstall": "npm run build",
+    "start": "node server.js"
   },
   "dependencies": {
     "axios": "0.19.2",
@@ -23,7 +25,9 @@
     "vue": "^2.6.11",
     "vue-multiselect": "^2.1.6",
     "vue-nouislider": "^1.0.1",
-    "vue-router": "3.1.5"
+    "vue-router": "3.1.5",
+    "express": "^4.17.1",
+    "serve-static": "^1.14.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.2.0",

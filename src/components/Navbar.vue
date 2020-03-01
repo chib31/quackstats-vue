@@ -3,7 +3,8 @@
     <b-navbar type="dark" variant="dark" class="pb-0">
       <b-navbar-brand href="/">
         <b-img class="navbar__logo" src="../assets/images/plastics_logo_no_text.png"/>
-        {{ teamName }}
+        {{ teamName }} Stats
+        <b-badge variant="warning">BETA</b-badge>
       </b-navbar-brand>
       <b-navbar-nav variant="dark" type="dark" class="ml-auto">
         <b-nav-item to="/results"><b-icon-calendar/> Results</b-nav-item>
