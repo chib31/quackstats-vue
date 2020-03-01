@@ -1,6 +1,6 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <div class="stats-table">
-    <b-card body-class="statTableCardBody">
+    <div v-if="resultsExist">
       <b-pagination v-model="currentPage"
                     v-if="paginationRequired"
                     :total-rows="filteredDataLength"
@@ -84,7 +84,12 @@
                     size="sm" pills
                     align="center"
                     class="my-1 mx-auto"/>
-    </b-card>
+    </div>
+    <div v-if="!resultsExist">
+      <b-card text-variant="secondary" class="my-4 mx-auto" align="center">
+        <b-card-text>No Results</b-card-text>
+      </b-card>
+    </div>
   </div>
 </template>
 
@@ -108,6 +113,9 @@
     computed: {
       filteredDataLength() {
         return this.tableData == null ? 0 : this.tableData.length;
+      },
+      resultsExist() {
+        return this.filteredDataLength > 0;
       },
       paginationRequired() {
         return (this.filteredDataLength > this.perPage && this.filteredDataLength > 0);

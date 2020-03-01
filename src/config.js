@@ -1,9 +1,9 @@
 export default {
-  TEAM_NAME: 'Plastics CC',
-  //BASE_URL: 'http://localhost:9090',
-  BASE_URL: 'https://quackstats-sba.herokuapp.com/',
-  STATS_API_PATH: 'api/stats?statType=',
-  REQUEST_TIMEOUT: 3000,
-  API_USER: 'user',
-  API_PASSWORD: 'password',
+  RUN_MODE:             process.env.NODE_ENV,
+  TEAM_NAME:            process.env.VUE_APP_TEAM_NAME,
+  BASE_URL:             process.env.VUE_APP_BASE_URL,
+  STATS_API_PATH:       process.env.VUE_APP_STATS_API_PATH,
+  REQUEST_TIMEOUT:      process.env.VUE_APP_REQUEST_TIMEOUT,
+  API_USER:             process.env.VUE_APP_API_USER,
+  API_PASSWORD:         process.env.VUE_APP_API_PASSWORD,
 };

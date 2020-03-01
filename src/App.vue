@@ -1,9 +1,7 @@
 <template>
-  <div id="app" style="max-width: 70rem" class="ml-auto mr-auto">
+  <div id="app" class="ml-auto mr-auto app_container">
     <navbar/>
-    <b-card>
-      <router-view/>
-    </b-card>
+    <router-view/>
   </div>
 </template>
 
@@ -33,3 +31,10 @@
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"/>
+
+<style lang="scss">
+  
+  .app_container {
+    max-width: 100em;
+  }
+</style>

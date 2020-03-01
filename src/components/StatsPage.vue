@@ -1,42 +1,42 @@
 <template>
   <div class="stats-page">
-    <b-button-toolbar class="mb-2">
-      <h1 class="pr-2 my-0 pb-1 display-4"> {{ toTitleCase(statType) + ' Stats' }} </h1>
-      <b-dropdown text="Group By" variant="light" class="mx-1 mt-auto" menu-class="text-nowrap">
-        <b-dropdown-form>
-          <b-checkbox switch
-                      v-for="col of colsBase.filter(e => e.groupable)"
-                      :key="col.key"
-                      v-model="col.grouped">
-            {{col.label}}
-          </b-checkbox>
-        </b-dropdown-form>
-      </b-dropdown>
-      <b-dropdown text="Choose Columns" variant="light" class="mx-1 mt-auto" menu-class="text-nowrap">
-        <b-dropdown-form>
-          <b-checkbox switch
-                      v-for="col of colsGrouped.filter(e => e[currentViewabilityKey] === 'OPTIONAL')"
-                      :key="col.key"
-                      v-model="col[currentDisplayKey]">
-            {{col[currentLabelKey]}}
-          </b-checkbox>
-        </b-dropdown-form>
-      </b-dropdown>
-      <b-button :pressed.sync="showFilters" variant="light" class="mx-1 mt-auto">Filter</b-button>
-      <b-form inline class="ml-auto mt-auto">
-        <b-form-text>Showing</b-form-text>
-        <b-form-select v-model="perPage" :options="perPageOptions" class="mx-1 stats-page__per-page-select" size="sm"/>
-        <b-form-text>of {{ dataFinal == null ? 0 : dataFinal.length }} results</b-form-text>
-      </b-form>
-      <div class="float-right">
-      </div>
+    <b-button-toolbar class="mb-1 mx-2">
+      <b-container fluid="true" class="m-0 p-0">
+        <b-row cols="1" cols-md="2">
+          <b-col cols="12" md="auto">
+            <h1 class="display-4"> {{ toTitleCase(statType) + ' Stats' }} </h1>
+          </b-col>
+          <b-col class="d-flex justify-content-start px-0 pb-1">
+            <b-dropdown text="Group By" variant="light" class="mx-1 mt-auto" menu-class="text-nowrap"
+                        v-if="resultsFound">
+              <b-dropdown-form>
+                <b-checkbox switch v-for="col of colsBase.filter(e => e.groupable)" :key="col.key" v-model="col.grouped">
+                  {{col.label}}
+                </b-checkbox>
+              </b-dropdown-form>
+            </b-dropdown>
+            <b-dropdown text="Choose Columns" variant="light" class="mx-1 mt-auto" menu-class="text-nowrap"
+                        v-if="resultsFound">
+              <b-dropdown-form>
+                <b-checkbox switch v-for="col of colsGrouped.filter(e => e[currentViewabilityKey] === 'OPTIONAL')"
+                            :key="col.key" v-model="col[currentDisplayKey]">
+                  {{col[currentLabelKey]}}
+                </b-checkbox>
+              </b-dropdown-form>
+            </b-dropdown>
+            <b-button :pressed.sync="showFilters" variant="light" class="mx-1 mt-auto" v-if="resultsFound">
+              Filter
+            </b-button>
+          </b-col>
+        </b-row>
+      </b-container>
     </b-button-toolbar>
     <transition name="slide-fade">
-      <b-card v-if="showFilters" class="mb-3" body-class="px-0 stats-page__filter-background">
-        <b-container>
-          <b-row cols="2">
-            <b-col v-for="col of colsBase.filter(e => e.filterable)" :key="col.key">
-              <b-form-group :label="col.label" label-cols="3" label-class="pt-2 text-right">
+      <div v-if="showFilters" class="mb-3 mx-2 mt-3">
+        <b-container fluid="true" class="px-4">
+          <b-row cols="1" cols-md="2" cols-xl="3">
+            <b-col v-for="col of colsBase.filter(e => e.filterable)" :key="col.key" class="px-1 mb-1">
+              <b-form-group :label="col.label" label-cols="3" label-class="pt-2 pr-1 text-right stats-page__filter-label">
                 <multiselect v-model="col.selectFilters"
                              class="multiselect"
                              :taggable="true"
@@ -56,31 +56,23 @@
               </b-form-group>
             </b-col>
           </b-row>
-          <hr class="mt-1"/>
-          <b-row cols="2">
-            <b-col v-for="col of rangeCols" :key="col.key">
-              <b-form-group :label="col[currentLabelKey]"
-                            label-cols="2"
-                            label-class="text-right pr-0">
+          <hr class="mt-1" v-if="validRangeCols.length > 0"/>
+          <b-row cols="1" cols-md="2" cols-xl="3">
+            <b-col v-for="col of validRangeCols" :key="col.key" class="px-1">
+              <b-form-group :label="col[currentLabelKey]" label-cols="3"
+                            label-class="text-right pr-0 mb-1 stats-page__filter-label">
                 <b-container class="pt-1">
                   <b-row>
-                    <b-col class="text-right text-muted pl-0 py-1">
-                      <span v-if="validRange(col)">{{ Math.round(col.filterRange[0]) }}</span>
+                    <b-col class="text-right text-muted pl-0 pr-2 py-1 stats-page__filter-label">
+                      <span>{{ Math.round(col.filterRange[0]) }}</span>
                     </b-col>
                     <b-col cols="9">
-                      <div class="pt-2" v-if="validRange(col)">
-                        <nouislider :key="col.filterRange[0]"
-                                    :config="col.filterConfig"
-                                    :values="col.filterRange"/>
+                      <div class="pt-2">
+                        <nouislider :key="col.filterRange[0]" :config="col.filterConfig" :values="col.filterRange"/>
                       </div>
-                      <span v-if="!validRange(col)" class="font-italic mx-auto text-secondary" style="display:table">
-                        All values {{ Math.round(col.filterRange[0] * 100) / 100 }}
-                      </span>
                     </b-col>
-                    <b-col class="text-left text-muted pr-0 py-1">
-                      <span v-if="validRange(col)">
-                        {{ Math.round(col.filterRange[1]) }}
-                      </span>
+                    <b-col class="text-left text-muted pr-0 pl-2 py-1 stats-page__filter-label">
+                      <span>{{ Math.round(col.filterRange[1]) }}</span>
                     </b-col>
                   </b-row>
                 </b-container>
@@ -88,9 +80,16 @@
             </b-col>
           </b-row>
         </b-container>
-      </b-card>
+      </div>
     </transition>
+    <hr class="p-0 m-0 pb-2"/>
+    <b-form v-if="resultsFound" inline class="mb-2 d-flex justify-content-center">
+      <b-form-text>Showing</b-form-text>
+      <b-form-select v-model="perPage" :options="perPageOptions" class="mx-1 stats-page__per-page-select" style="max-width: 60px" size="sm"/>
+      <b-form-text>of {{ dataFinal == null ? 0 : dataFinal.length }} results</b-form-text>
+    </b-form>
     <stats-table
+      v-if="resultsFound && !tableLoading"
       :table-data="dataFinal"
       :table-columns="colsDisplayed"
       :table-loading="tableLoading"
@@ -100,6 +99,15 @@
       v-on:clickNewPriority="clickNewPriority"
       v-on:clickExistingPriority="clickExistingPriority"
       v-on:clearPriority="clearPriority"/>
+    <div v-if="!resultsFound || tableLoading" class="d-flex justify-content-center my-4">
+      <b-spinner v-if="tableLoading" variant="primary" label="Loading..."/>
+      <div v-if="!tableLoading">
+        <h4 class="text-secondary">No data found</h4>
+        <div class="d-flex justify-content-center">
+          <b-button v-on:click="fetchData" variant="outline-secondary" pill size="lg"><b-icon-arrow-repeat/></b-button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -130,7 +138,7 @@
         tableLoading: false,
         showFilters: false,
         currentPage: 1,
-        perPage: 20,
+        perPage: 50,
         perPageOptions: [
           {value: 20, text: 20},
           {value: 50, text: 50},
@@ -149,7 +157,7 @@
     },
     mixins: [Utils],
     mounted() {
-      this.fetchData(this.statType);
+      this.fetchData();
     },
     computed: {
       groupingActive() {
@@ -166,6 +174,9 @@
       },
       currentDisplayKey() {
         return this.groupingActive ? 'aggDisplay' : 'display';
+      },
+      resultsFound() {
+        return this.dataBase && this.dataBase.length > 0;
       },
 
       // COLUMN SETS
@@ -186,7 +197,12 @@
         // The columns with range filters directly applied
         return this.colsGrouped.filter(e => e[this.currentRangeableKey]);
       },
+      validRangeCols() {
+        // Columns with valid range limits (i.e. min < max)
+        return this.rangeCols.filter(e => e.filterConfig.range.min < e.filterConfig.range.max);
+      },
 
+      // **************************************************************************************************************
       // WATCHER TARGETS - only exist as lightweight 'summaries' for watchers, to avoid deep watching
       "filterWatcherTarget"() {
         return this.filterCols.map(e => e.key + ':[' + e.selectFilters.map(e => e.value).join(',') + ']').join(', ');
@@ -200,6 +216,7 @@
       "rangeWatcherTarget"() {
         return this.rangeCols.map(e => e.filterRange[0] + ',' + e.filterRange[1]).join(', ');
       },
+      // --------------------------------------------------------------------------------------------------------------
 
       // The columns to be displayed (filters based on display key then sends to table)
       colsDisplayed() {
@@ -209,9 +226,10 @@
     watch: {
       statType() {
         // If statType changes we need a full data refresh
-        this.fetchData(this.statType);
+        this.fetchData();
       },
 
+      // **************************************************************************************************************
       // Target watchers - watch 'summarised' strings in column data stages to trigger data updates
       filterWatcherTarget() { // Filters have changed
         this.performFilteringAndGrouping();
@@ -225,12 +243,52 @@
       rangeWatcherTarget() { // Ranges have changed
         this.performRangeFiltering();
       },
+      // --------------------------------------------------------------------------------------------------------------
     },
     methods: {
+      fetchData() {
+        const statType = this.statType;
+        const app = this;
+
+        // Construct request url
+        if (statType != null) {
+          const url = config.BASE_URL + '/' + config.STATS_API_PATH + statType.toUpperCase();
+
+          // Set status to loading and send request
+          app.tableLoading = true;
+          axios.get(
+              url,
+              {
+                auth: {username: config.API_USER, password: config.API_PASSWORD},
+                timeout: config.REQUEST_TIMEOUT
+              }
+          ).catch(error => {throw error;}
+          ).then(response => {
+            
+            if(response.data) {
+              // Extract data from response
+              const rd = response.data;
+              app.reportInfo = rd.reportInfo;
+              app.colsRaw = rd.columnList;
+              app.dataRaw = rd.dataList;
+              app.refreshData();
+              
+            } else {
+              console.log(response);
+              throw new TypeError('Oh no! The stats database has returned an error. Please try again later.');
+            }
+
+          }).finally(function () {
+            app.tableLoading = false;
+          });
+        }
+      },
+      
       refreshData() {
         // Clone raw data to base data (raw data effectively provides a backup so no need to re-fetch data)
         this.colsBase = cloneDeep(this.colsRaw);
         this.dataBase = this.dataRaw.slice();
+        this.performFilteringAndGrouping();
       },
 
       performFilteringAndGrouping: function () {
@@ -285,43 +343,7 @@
       performRangeFiltering() {
         this.dataFinal = this.dataSorted.filter(e => this.checkWithinRangeFilters(e, this.rangeCols)).slice();
       },
-
-      fetchData(statType) {
-        const app = this;
-
-        // Construct request url
-        if (statType != null) {
-          const url = config.BASE_URL + '/' + config.STATS_API_PATH + statType.toUpperCase();
-
-          // Set status to loading and send request
-          app.tableLoading = true;
-          axios.get(
-            url,
-            {
-              auth: {username: config.API_USER, password: config.API_PASSWORD},
-              timeout: config.REQUEST_TIMEOUT
-            }
-          ).catch(error => {
-            if (error.code === 'ECONNABORTED') {
-              return 'timeout';
-            } else {
-              throw error;
-            }
-          }).then(response => {
-            const responseData = response.data;
-
-            // Extract data from response
-            app.reportInfo = responseData.reportInfo;
-            app.colsRaw = responseData.columnList;
-            app.dataRaw = responseData.dataList;
-
-            app.refreshData();
-
-          }).finally(function () {
-            app.tableLoading = false;
-          });
-        }
-      },
+      
       aggregateRow(row, cols) {
         let result = {};
         result.group_term = this.formatGroupTerm(row.namePath());
@@ -414,6 +436,25 @@
         }
       },
 
+      uniqueValues(data, column) {
+        const key = column.key;
+        let values = uniqBy(data, key);
+        const val = values[0];
+        if (typeof val === 'string') {
+          values = values.sort();
+        } else {
+          values = values.sort((a, b) => a - b);
+        }
+        return values.map(e => {
+          return {value: e[key]}
+        });
+      },
+
+      validRange(col) {
+        return col.filterConfig.range.min < col.filterConfig.range.max
+      },
+
+      // **************************************************************************************************************
       // ********** SORTING METHODS ***********************************************************************************
       // **************************************************************************************************************
       clickHeader(colKey) {
@@ -466,26 +507,9 @@
           Vue.set(col, 'sortPriority', null);
         }
       },
-      // **************************************************************************************************************
-      // **************************************************************************************************************
-
-      uniqueValues(data, column) {
-        const key = column.key;
-        let values = uniqBy(data, key);
-        const val = values[0];
-        if (typeof val === 'string') {
-          values = values.sort();
-        } else {
-          values = values.sort((a, b) => a - b);
-        }
-        return values.map(e => {
-          return {value: e[key]}
-        });
-      },
-
-      validRange(col) {
-        return col.filterConfig.range.min < col.filterConfig.range.max
-      }
+      // --------------------------------------------------------------------------------------------------------------
+      // --------------------------------------------------------------------------------------------------------------
+      // --------------------------------------------------------------------------------------------------------------
     },
   };
 </script>
@@ -493,16 +517,26 @@
 <style lang="scss">
   @import '../custom';
 
-  $multiselect-font-size: 0.9em;
+  $select-font-size: 0.9em;
 
   .stats-page {
+    .form-group {
+      margin-bottom: 0 !important;
+    }
+    
     .stats-page__per-page-select {
       padding-top: 0;
       padding-bottom: 0;
       font-size: 0.8em;
     }
+    
+    .stats-page__per-page-select:disabled {
+      color: $secondary;
+      background-color: $faded-gray;
+    }
 
-    .stats-page__filter-background {
+    .stats-page__filter-label {
+      font-size: $select-font-size;
     }
 
     .slide-fade-enter-active {
@@ -537,7 +571,7 @@
     .multiselect__input,
     .multiselect__single {
       font-family: inherit;
-      font-size: $multiselect-font-size;
+      font-size: $select-font-size;
       touch-action: manipulation;
     }
 
