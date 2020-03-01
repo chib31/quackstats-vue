@@ -6,7 +6,8 @@
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode development",
     "lint": "vue-cli-service lint --mode development",
-    "start": "vue-cli-service build --mode production"
+    "postinstall": "npm run build --mode production",
+    "start": "node server.js"
   },
   "dependencies": {
     "axios": "0.19.2",
