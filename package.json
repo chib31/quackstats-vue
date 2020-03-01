@@ -6,7 +6,7 @@
     "serve": "vue-cli-service serve --mode development",
     "build": "vue-cli-service build --mode development",
     "lint": "vue-cli-service lint --mode development",
-    "postinstall": "npm run build --mode production",
+    "postinstall": "npm run build",
     "start": "node server.js"
   },
   "dependencies": {
