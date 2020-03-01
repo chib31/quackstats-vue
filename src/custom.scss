@@ -1,0 +1,31 @@
+$plastics-pink: #FF6796;
+$pink: #ff99b9;
+$plastics-fade: #ffccdc;
+$plastics-extra-fade: #ffe6ed;
+$gray: #6c757d;
+$gray-dark: #343a40;
+$gray-light: #D3D3D3;
+$white: #fff;
+
+$primary:               $pink;
+$primary-dark:          $plastics-pink;
+$primary-light:         $plastics-fade;
+$primary-very-light:    $plastics-extra-fade;
+$primary-light-t:       rgba($primary, 0.3);
+$primary-very-light-t:  rgba($primary, 0.08);
+$secondary:             $gray;
+$secondary-dark:        $gray-dark;
+$secondary-light:       $gray-light;
+$info:                  $plastics-pink;
+$light:                 $white;
+
+$pagination-color: $secondary-dark;
+$pagination-hover-bg: $primary-light;
+$pagination-hover-color: $secondary-dark;
+$pagination-active-bg: $primary;
+$pagination-active-color: $light;
+$pagination-active-border-color: $primary;
+$pagination-disabled-bg: $secondary-light;
+
+@import 'node_modules/bootstrap/scss/bootstrap';
+@import 'node_modules/bootstrap-vue/src/index';
