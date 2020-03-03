@@ -1,7 +1,9 @@
 <template>
   <div id="app" class="ml-auto mr-auto app_container">
     <navbar/>
-    <router-view/>
+    <div class="m-0 px-sm-2 px-md-3">
+      <router-view/>
+    </div>
   </div>
 </template>
 
