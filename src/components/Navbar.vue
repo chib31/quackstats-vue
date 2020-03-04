@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-navbar toggleable="md" type="dark" variant="dark">
-      <b-navbar-brand href="/">
+      <b-navbar-brand href="/" class="mr-2">
         <b-img class="navbar__logo" src="../assets/images/plastics_logo_no_text.png"/>
         {{ teamName }} Stats
       </b-navbar-brand>

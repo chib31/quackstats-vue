@@ -7,7 +7,7 @@
       playing with plastic balls.
     </p>
     <p>
-      This our stats website. You can find out more about us on:
+      This is our stats website. You can find out more about us on:
     </p>
     <ul>
       <li><b-link href="https://plasticscc.weebly.com/">Main Website</b-link></li>
