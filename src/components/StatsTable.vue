@@ -1,15 +1,30 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <div class="stats-table">
     <div v-if="resultsExist">
-      <b-pagination v-model="currentPage"
-                    v-if="paginationRequired"
-                    :total-rows="filteredDataLength"
-                    :per-page="perPage"
-                    aria-controls="stats-table"
-                    size="sm" pills
-                    align="center"
-                    class="my-1 mx-auto"
-                    small/>
+      <b-container fluid="true">
+        <b-row cols="1" :cols-md="paginationRequired ? 2 : 1">
+          <b-col class="my-1" v-if="paginationRequired">
+            <b-pagination v-model="currentPage"
+                          :total-rows="filteredDataLength"
+                          :per-page="perPage"
+                          aria-controls="stats-table"
+                          size="sm" pills
+                          align="center"
+                          class="pt-1 mx-0 my-0 align-bottom"
+                          small/>
+          </b-col>
+          <b-col class="my-1">
+            <b-form v-if="tableData && tableData.length > 0" inline class="mb-2 d-flex justify-content-center">
+              <b-form-text>Showing</b-form-text>
+              <b-form-select v-model="perPage"
+                             :options="perPageOptions"
+                             class="mx-1 stats-table__per-page-select"
+                             size="sm"/>
+              <b-form-text>of {{ tableData == null ? 0 : tableData.length }} results</b-form-text>
+            </b-form>
+          </b-col>
+        </b-row>
+      </b-container>
       <b-table
         id="stats-table"
         :items="tableData"
@@ -76,14 +91,31 @@
           {{ (filteredData.index + 1) + (perPage * (currentPage - 1)) }}
         </template>
       </b-table>
-      <b-pagination v-model="currentPage"
-                    v-if="paginationRequired"
-                    :total-rows="filteredDataLength"
-                    :per-page="perPage"
-                    aria-controls="stats-table"
-                    size="sm" pills
-                    align="center"
-                    class="my-1 mx-auto"/>
+      <b-container fluid="true">
+        <b-row cols="1" :cols-md="paginationRequired ? 2 : 1">
+          <b-col class="my-1" v-if="paginationRequired">
+            <b-pagination v-model="currentPage"
+                          :total-rows="filteredDataLength"
+                          :per-page="perPage"
+                          aria-controls="stats-table"
+                          size="sm" pills
+                          align="center"
+                          class="pt-1 mx-0 my-0 align-bottom"
+                          small/>
+          </b-col>
+          <b-col class="my-1">
+            <b-form v-if="tableData && tableData.length > 0" inline class="mb-2 d-flex justify-content-center">
+              <b-form-text>Showing</b-form-text>
+              <b-form-select v-model="perPage"
+                             :options="perPageOptions"
+                             class="mx-1 stats-table__per-page-select"
+                             size="sm"/>
+              <b-form-text>of {{ tableData == null ? 0 : tableData.length }} results</b-form-text>
+            </b-form>
+          </b-col>
+        </b-row>
+      </b-container>
+      <hr/>
     </div>
     <div v-if="!resultsExist">
       <b-card text-variant="secondary" class="my-4 mx-auto" align="center">
@@ -103,11 +135,17 @@
       tableColumns: {type: Array},
       tableLoading: {type: Boolean},
       groupingActive: {type: Boolean},
-      perPage: null,
     },
     data() {
       return {
         currentPage: 1,
+        perPage: 50,
+        perPageOptions: [
+          {value: 20, text: 20},
+          {value: 50, text: 50},
+          {value: 100, text: 100},
+          {value: 99999, text: 'All'}
+        ],
       };
     },
     computed: {
@@ -178,6 +216,18 @@
   $stats-table-body-font-size:  0.8em;
 
   .stats-table {
+  
+    .stats-table__per-page-select {
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 0.8em;
+      max-width: 60px;
+    }
+  
+    .stats-table__per-page-select:disabled {
+      color: $secondary;
+      background-color: $faded-gray;
+    }
 
     .table-striped tbody tr:nth-of-type(odd) {
       background-color: $primary-very-light-t;

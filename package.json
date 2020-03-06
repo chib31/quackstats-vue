@@ -26,7 +26,6 @@
     "supergroup": "^1.1.9",
     "vue": "^2.6.11",
     "vue-multiselect": "^2.1.6",
-    "vue-nouislider": "^1.0.1",
     "vue-router": "3.1.5"
   },
   "devDependencies": {
