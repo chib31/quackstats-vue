@@ -42,7 +42,7 @@
                 <multiselect v-model="col.selectFilters"
                              class="multiselect"
                              :taggable="true"
-                             :options="uniqueValues(dataActive, col)"
+                             :options="uniqueValues(dataRaw, col)"
                              :multiple="true"
                              :close-on-select="true"
                              :clear-on-select="false"
@@ -490,16 +490,17 @@
           }
         }
         // Now process complex aggregates
-        for (const col of aggCols.filter(e => e.aggregateType === 'COMPLEX')) {
-          if (!col.aggCalculation) {
+        const complexAggCols = aggCols.filter(e => e.aggregateType === 'COMPLEX');
+        for (const complexCol of complexAggCols) {
+          if (!complexCol.aggCalculation) {
             throw new TypeError('Complex aggregate type does not have associated calculation');
           } else {
-            const numeratorKey = col.aggCalculation.numeratorKey;
-            const numerator = result[numeratorKey];
-            const denominatorKey = col.aggCalculation.denominatorKey;
-            const denominator = result[denominatorKey];
-            const multiplier = col.aggCalculation.multiplier;
-            result[col.key] = (multiplier * numerator) / denominator;
+            const numeratorKey = complexCol.aggCalculation.numeratorKey;
+            const numerator = numeratorKey ? result[numeratorKey] : result[complexCol.key];
+            const denominatorKey = complexCol.aggCalculation.denominatorKey;
+            const denominator = denominatorKey ? result[denominatorKey] : result[complexCol.key];
+            const multiplier = complexCol.aggCalculation.multiplier;
+            result[complexCol.key] = (multiplier * numerator) / denominator;
           }
         }
         return result;
@@ -578,15 +579,18 @@
       uniqueValues(data, column) {
         const key = column.key;
         let values = uniqBy(data, key);
-        const val = values[0];
-        if (typeof val === 'string') {
-          values = values.sort();
-        } else {
-          values = values.sort((a, b) => a - b);
+        if (values && values.length > 0) {
+          const val = values[0];
+          if (typeof val === 'string') {
+            values = values.sort();
+          } else {
+            values = values.sort((a, b) => a - b);
+          }
+          return values.map(e => {
+            return {value: e[key]}
+          });
         }
-        return values.map(e => {
-          return {value: e[key]}
-        });
+        else return null;
       },
     },
   };
