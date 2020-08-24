@@ -17,7 +17,7 @@
     "d3-array": "latest",
     "express": "^4.17.1",
     "fibers": "^4.0.2",
-    "jquery": "3.4.1",
+    "jquery": "3.5.0",
     "lodash": "^4.17.19",
     "node-sass": "^4.13.1",
     "sass": "^1.25.0",
