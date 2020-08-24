@@ -93,15 +93,22 @@
       v-on:clickNewPriority="clickNewPriority"
       v-on:clickExistingPriority="clickExistingPriority"
       v-on:clearPriority="clearPriority"/>
-    <div v-if="!resultsFound || tableLoading" class="d-flex justify-content-center my-4">
-      <b-spinner v-if="tableLoading" variant="primary" label="Loading..."/>
-      <div v-if="!tableLoading">
-        <h4 class="text-secondary">No data found</h4>
-        <div class="d-flex justify-content-center">
-          <b-button v-on:click="fetchData" variant="outline-secondary" pill size="lg"><b-icon-arrow-repeat/></b-button>
-        </div>
-      </div>
-    </div>
+
+    <b-container v-if="tableLoading || !resultsFound" class="mr-auto ml-auto">
+      <b-row class="justify-content-md-center">
+        <b-col cols="auto">
+          <h5 v-if="dataStatusMessage" class="text-secondary">{{ dataStatusMessage }}</h5>
+        </b-col>
+      </b-row>
+      <b-row class="justify-content-md-center">
+        <b-col cols="auto">
+          <b-spinner v-if="tableLoading" variant="primary" label="Loading..."/>
+          <b-button v-if="!tableLoading" v-on:click="fetchData" variant="outline-secondary" pill size="lg">
+            <b-icon-arrow-repeat/>
+          </b-button>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -141,6 +148,8 @@
         colsActive: [],
         dataRaw: [],
         dataActive: [],
+        responseData: {},
+        dataStatusMessage: null,
       };
     },
     mixins: [Utils],
@@ -271,45 +280,68 @@
       // --------------------------------------------------------------------------------------------------------------
     },
     methods: {
-      fetchData() {
-        const statType = this.statType;
-        const app = this;
-
+      async fetchData() {
         // Construct request url
-        if (statType != null) {
-          const url = config.BASE_URL + '/' + config.STATS_API_PATH + statType.toUpperCase();
+        if (this.statType != null) {
+          const requestUrl = config.BASE_URL + '/' + config.STATS_API_PATH + this.statType.toUpperCase();
+          const requestConfig = {
+            auth: {username: config.API_USER, password: config.API_PASSWORD},
+            timeout: config.REQUEST_TIMEOUT
+          }
 
-          // Set status to loading and send request
-          app.tableLoading = true;
-          axios.get(
-              url,
-              {
-                auth: {username: config.API_USER, password: config.API_PASSWORD},
-                timeout: config.REQUEST_TIMEOUT
-              }
-          ).catch(error => {throw error;}
-          ).then(response => {
-            
-            if(response.data) {
-              // Extract data from response
-              const rd = response.data;
-              app.reportInfo = rd.reportInfo;
-              app.colsRaw = rd.columnList;
-              
-              // Set include to true by default on all rows
-              this.dataRaw = this.includeAll(rd.dataList);
-              
-              // Push raw data through all processing stages
-              app.refreshData();
-              
-            } else {
-              console.log(response);
-              throw new TypeError('Oh no! The stats database has returned an error. Please try again later.');
+          this.tableLoading = true;
+
+          const maxAttempts = 5;
+          let attemptCount = 0;
+          while (attemptCount < maxAttempts) {
+            this.dataStatusMessage = 'Connecting to database (' + (attemptCount + 1) + '/' + maxAttempts + ')';
+            const result = await this.requestStats(requestUrl, requestConfig);
+            if (result === 'ERR_REQUEST') { // Failed to connect to backend - try again
+              this.dataStatusMessage = 'Unable to connect to database. Please try again.';
+              attemptCount++;
+            } else if (result === 'ERR_RESPONSE') { // Connected but returned an error
+              alert("An error has occurred whilst fetching the stats. This shouldn't happen - please tell Charlie!");
+              break;
+            } else { //Success
+              this.dataStatusMessage = this.responseData.dataList.length > 0 ? null : 'No data found';
+              this.processResponseData();
+              break;
             }
+          }
+          attemptCount = 0;
+          this.tableLoading = false;
+        }
+      },
 
-          }).finally(function () {
-            app.tableLoading = false;
-          });
+      processResponseData() {
+        this.reportInfo = this.responseData.reportInfo;
+        this.colsRaw = this.responseData.columnList;
+
+        // Set include to true by default on all rows
+        this.dataRaw = this.includeAll(this.responseData.dataList);
+
+        // Push raw data through all processing stages
+        this.refreshData();
+      },
+
+      async requestStats(requestUrl, requestConfig) {
+        try {
+          const response = await axios.get(requestUrl, requestConfig);
+          this.responseData = response.data;
+          return 'SUCCESS';
+
+        } catch (error) {
+          if (error.request) {
+            // Request not received
+            console.log(error.message);
+            return 'ERR_REQUEST'
+          } else {
+            // Connected to backend received error message (or other)
+            console.log('Unexpected error');
+            console.log(error.message);
+            alert("An error has occurred whilst fetching the stats. This shouldn't happen - please tell Charlie!");
+            return 'ERR_RESPONSE'
+          }
         }
       },
 
