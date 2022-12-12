@@ -15,7 +15,7 @@
     "bootstrap-vue": "2.5.0",
     "core-js": "^3.6.4",
     "d3-array": "latest",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "fibers": "^4.0.2",
     "jquery": "3.5.0",
     "lodash": "^4.17.19",
